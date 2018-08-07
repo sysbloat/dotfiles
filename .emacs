@@ -4,6 +4,9 @@
 ;
 ; - Matias Lago (sys_bloat)
 
+; Display time
+(display-time)
+
 ; Stop Emacs from losing undo info by setting high limiters for buffers
 (setq undo-limit 2000000)
 (setq undo-strong-limit 40000000)
@@ -34,10 +37,14 @@
 ; Set windows-specific behavior
 (when matias-win
   (setq matias-font "outline-Palatino Linotype")
+  (setq backup-directory-alist '(("." . "w:\backups")))
+  (setq makescript "build.bat")
   )
 
 ; Set unix-specific behavior
 (when matias-unix
+  (setq backup-directory-alist '(("." . "~/.backups")))
+  (setq makescript "./build.unix")
   )
 
 ; Turn off toolbar
@@ -199,89 +206,109 @@
     (c-echo-syntactic-information-p . t))
   "Matias' C/++ Style")
 
+; c/++ mode handling
+(defun matias-c-hook ()
+  ; Set style for current buffer
+  (c-add-style "Matias" matias-c-style t)
+
+  ; 4-space tabs
+  (setq tab-width 4
+	indent-tabs-mode nil)
+
+  ; Additional style stuff
+  (c-set-offset 'member-init-intro '++)
+
+  ; No hungry backspace
+  (c-toggle-auto-hungry-state -1)
+
+  ; Newline indents, semicolon doesn't
+  (define-key c++-mode-map "C\-m" 'newline-add-indent)
+  (setq c-hanging-semi&comma-criteria '((lambda () 'stop)))
+
+  ; Handle super-tabbify (TAB completes, shift-TAB actually tabs)
+  (setq dabbrev-case-replace t)
+  (setq dabbrev-case-fold-search t)
+  (setq dabbrev-upcase-means-case-search t)
+
+  ; Abbreviation expansion
+  (abbrev-mode 1)
+  (defun header-format ()
+    "Format given file as a header file."
+    (interactive)
+    (setq BaseFileName (file-name-sans-extension (file-name-nondirectory buffer-file-name)))
+    (insert "#if !defined(")
+    (push-mark)
+    (insert BaseFileName)
+    (upcase-region (mark) (point))
+    (pop-mark)
+    (insert "_H)\n")
+    (insert "/* ========================================================================\n")
+    (insert "   $File: $\n")
+    (insert "   $Date: $\n")
+    (insert "   $Revision: $\n")
+    (insert "   $Creator: Matias Lago $\n")
+    (insert "   $Github: https://github.com/sysbloat $\n")
+    (insert "   ======================================================================== */\n")
+    (insert "\n")
+    (insert "#define ")
+    (push-mark)
+    (insert BaseFileName)
+    (upcase-region (mark) (point))
+    (pop-mark)
+    (insert "_H\n")
+    (insert "#endif"))
+
+  (defun source-format ()
+    "Format given file as source file."
+    (interactive)
+    (setq BaseFileName (file-name-sans-extension (file-name-nondirectory buffer-file-name)))
+    (insert "/* ========================================================================\n")
+    (insert "   $File: $\n")
+    (insert "   $Date: $\n")
+    (insert "   $Revision: $\n")
+    (insert "   $Creator: Matias Lago $\n")
+    (insert "   $Github: https://github.com/sysbloat $\n")
+    (insert "   ======================================================================== */\n"))
+
+  (cond ((file-exists-p buffer-file-name) t)
+	((string-match "[.]hin" buffer-file-name) (header-format))
+	((string-match "[.]cin" buffer-file-name) (source-format))
+	((string-match "[.]h" buffer-file-name) (header-format))
+	((string-match "[.]c" buffer-file-name) (source-format)))
+
+   (defun find-corresponding-file ()
+    "Find the file that corresponds to this one."
+    (interactive)
+    (setq CorrespondingFileName nil)
+    (setq BaseFileName (file-name-sans-extension buffer-file-name))
+    (if (string-match "\\.c" buffer-file-name)
+       (setq CorrespondingFileName (concat BaseFileName ".h")))
+    (if (string-match "\\.h" buffer-file-name)
+       (if (file-exists-p (concat BaseFileName ".c")) (setq CorrespondingFileName (concat BaseFileName ".c"))
+	   (setq CorrespondingFileName (concat BaseFileName ".cpp"))))
+    (if (string-match "\\.hin" buffer-file-name)
+       (setq CorrespondingFileName (concat BaseFileName ".cin")))
+    (if (string-match "\\.cin" buffer-file-name)
+       (setq CorrespondingFileName (concat BaseFileName ".hin")))
+    (if (string-match "\\.cpp" buffer-file-name)
+       (setq CorrespondingFileName (concat BaseFileName ".h")))
+    (if CorrespondingFileName (find-file CorrespondingFileName)
+       (error "Unable to find a corresponding file")))
+  (defun find-corresponding-file-other-window ()
+    "Find the file that corresponds to this one."
+    (interactive)
+    (find-file-other-window buffer-file-name)
+    (find-corresponding-file)
+    (other-window -1))
+  (define-key c++-mode-map [f12] 'find-corresponding-file)
+  (define-key c++-mode-map [M-f12] 'find-corresponding-file-other-window))
+
+; End hook
+
+(add-hook 'c-mode-common-hook 'matias-c-hook)
+
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+; @TODO: implement compilation features
 
 
 
