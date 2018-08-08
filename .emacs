@@ -26,7 +26,8 @@
 (scroll-bar-mode -1)
 
 ; Disallow shift motions to set mark
-(setq shift-select-mode nil)
+;(setq shift-select-mode nil)
+
 
 ; Disable local variables
 (setq enable-local-variables nil)
@@ -222,7 +223,7 @@
   (c-toggle-auto-hungry-state -1)
 
   ; Newline indents, semicolon doesn't
-  (define-key c++-mode-map "C\-m" 'newline-add-indent)
+  ;(define-key c++-mode-map "C\-m" 'newline-add-indent)
   (setq c-hanging-semi&comma-criteria '((lambda () 'stop)))
 
   ; Handle super-tabbify (TAB completes, shift-TAB actually tabs)
