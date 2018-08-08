@@ -311,7 +311,11 @@
 
 ; @TODO: implement compilation features
 
-
+(defun custom-compile ()
+  (interactive)
+  "Compile thru own build shell files"
+  (setq build_cmd (concat "../build/" makescript))
+  (shell-command build_cmd))
 
 
 
