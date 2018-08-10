@@ -40,12 +40,22 @@
   (setq matias-font "outline-Palatino Linotype")
   (setq backup-directory-alist '(("." . "w:\backups")))
   (setq makescript "build.bat")
-  )
+
+  (defun custom-compile ()
+  (interactive)
+  "Compile thru own build shell files"
+  (setq build_cmd (concat "../build/" makescript))
+  (shell-command (concat "call " build_cmd)))
 
 ; Set unix-specific behavior
 (when matias-unix
   (setq backup-directory-alist '(("." . "~/.backups")))
   (setq makescript "./build.unix")
+  (defun custom-compile ()
+  (interactive)
+  "Compile thru own build shell files"
+  (setq build_cmd (concat "../build/" makescript))
+  (shell-command build_cmd))
   )
 
 ; Turn off toolbar
@@ -307,19 +317,3 @@
 ; End hook
 
 (add-hook 'c-mode-common-hook 'matias-c-hook)
-
-
-; @TODO: implement compilation features
-
-(defun custom-compile ()
-  (interactive)
-  "Compile thru own build shell files"
-  (setq build_cmd (concat "../build/" makescript))
-  (shell-command build_cmd))
-
-
-
-
-
-
-
